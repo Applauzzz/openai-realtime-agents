@@ -3,6 +3,7 @@ import {
   RealtimeSession,
   RealtimeAgent,
   OpenAIRealtimeWebRTC,
+  type RealtimeTransportLayer,
 } from '@openai/agents/realtime';
 
 import { applyCodecPreferences } from '../lib/codecUtils';
@@ -21,6 +22,7 @@ export interface ConnectOptions {
   audioElement?: HTMLAudioElement;
   extraContext?: Record<string, any>;
   outputGuardrails?: any[];
+  transport?: RealtimeTransportLayer;
 }
 
 export function useRealtimeSession(callbacks: RealtimeSessionCallbacks = {}) {
@@ -117,16 +119,17 @@ export function useRealtimeSession(callbacks: RealtimeSessionCallbacks = {}) {
       audioElement,
       extraContext,
       outputGuardrails,
+      transport,
     }: ConnectOptions) => {
       if (sessionRef.current) return; // already connected
 
       updateStatus('CONNECTING');
 
-      const ek = await getEphemeralKey();
+      const ek = transport ? 'duplex-mimo-local' : await getEphemeralKey();
       const rootAgent = initialAgents[0];
 
       sessionRef.current = new RealtimeSession(rootAgent, {
-        transport: new OpenAIRealtimeWebRTC({
+        transport: transport ?? new OpenAIRealtimeWebRTC({
           audioElement,
           // Set preferred codec before offer creation
           changePeerConnection: async (pc: RTCPeerConnection) => {
