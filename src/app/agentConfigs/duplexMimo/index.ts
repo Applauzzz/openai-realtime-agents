@@ -71,15 +71,61 @@ const getCurrentDatetime = tool({
   },
 });
 
+const consultReasoningModel = tool({
+  name: 'consult_reasoning_model',
+  description: (
+    '调用后端 GPT-4o 完成复杂的文本推理。仅用于多步骤规划、方案比较、代码或技术分析、'
+    + '复杂逻辑和需要更强推理能力的任务；简单问答不得调用。该模型看不到原始音频或视频，'
+    + '必须在 task/context 中提供完成任务所需的全部语义和视觉事实。'
+  ),
+  parameters: z.object({
+    task: z.string().min(1).max(8_000)
+      .describe('完整、可独立执行的推理任务，不得只写“回答用户”。'),
+    context: z.string().max(16_000).nullable()
+      .describe('MiMo 从本轮音频、视频和必要对话历史中提取的相关事实；没有时传 null。'),
+  }),
+  execute: async ({ task, context }) => {
+    const response = await fetch('/api/tools/reasoning', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ task, context: context ?? '' }),
+    });
+    if (!response.ok) {
+      const detail = await response.text();
+      throw new Error(
+        `Reasoning model failed (${response.status}): ${detail.slice(0, 300)}`,
+      );
+    }
+    return response.json();
+  },
+});
+
+const supportedTools = {
+  search_web: searchWeb,
+  get_current_datetime: getCurrentDatetime,
+  consult_reasoning_model: consultReasoningModel,
+} as const;
+
+type SupportedToolName = keyof typeof supportedTools;
+
+function resolveTools(spec: DuplexMimoAgentManifest) {
+  return spec.tools.map(({ function: definition }) => {
+    const name = definition.name as SupportedToolName;
+    const implementation = supportedTools[name];
+    if (!implementation) {
+      throw new Error(`Unsupported duplex MiMo tool: ${definition.name}`);
+    }
+    return implementation;
+  });
+}
+
 const agents = new Map<string, RealtimeAgent>();
 
 for (const spec of duplexMimoManifest.agents) {
   agents.set(spec.name, new RealtimeAgent({
     name: spec.name,
     instructions: spec.instructions,
-    tools: spec.name === duplexMimoManifest.root_agent
-      ? [searchWeb, getCurrentDatetime]
-      : [],
+    tools: resolveTools(spec),
     handoffs: [],
   }));
 }
