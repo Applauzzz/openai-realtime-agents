@@ -1,0 +1,308 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "binding_version": {
+      "const": 2
+    },
+    "protocol": {
+      "const": "duplex-mac-tools/v2"
+    },
+    "profile": {
+      "enum": [
+        "notes_timers_demo_v1",
+        "notes_timers_weather_travel_demo_v1",
+        "apple_desktop_tools_demo_v1",
+        "apple_contacts_facetime_demo_v1"
+      ]
+    },
+    "device_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "^[!-~]+$"
+    },
+    "state": {
+      "enum": [
+        "waiting_authorization",
+        "waiting_voice_session",
+        "authorized",
+        "authorization_revoked",
+        "conflict",
+        "waiting_scope_authorization",
+        "backend_adapter_pending"
+      ]
+    },
+    "binding_revision": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "session_id": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[!-~]+$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "generation_id": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "minimum": 0
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "scope": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "apple_event_create",
+          "apple_event_delete",
+          "apple_event_list",
+          "apple_event_update",
+          "apple_reminder_create",
+          "apple_reminder_delete",
+          "apple_reminder_list",
+          "apple_reminder_update",
+          "context_get",
+          "demo_echo",
+          "document_folders",
+          "document_go_to_page",
+          "document_open",
+          "document_read_page",
+          "document_search",
+          "facetime_call",
+          "note_append",
+          "note_create",
+          "note_get",
+          "note_search",
+          "place_search",
+          "route_plan",
+          "timer.events.receive",
+          "timer.events.speak",
+          "timer_cancel",
+          "timer_list",
+          "timer_start",
+          "weather_get",
+          "contacts_search",
+          "facetime_call_contact"
+        ]
+      },
+      "uniqueItems": true,
+      "maxItems": 30
+    },
+    "connected": {
+      "type": "boolean"
+    },
+    "poll_after_ms": {
+      "const": 2000
+    },
+    "workspace_id": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[!-~]+$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "context_id": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[!-~]+$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "authorization_revision": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "minimum": 0
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "available_tools": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "demo_echo",
+          "context_get",
+          "note_create",
+          "note_get",
+          "note_append",
+          "note_search",
+          "timer_start",
+          "timer_list",
+          "timer_cancel",
+          "weather_get",
+          "place_search",
+          "route_plan",
+          "apple_reminder_create",
+          "apple_reminder_list",
+          "apple_reminder_update",
+          "apple_reminder_delete",
+          "apple_event_create",
+          "apple_event_list",
+          "apple_event_update",
+          "apple_event_delete",
+          "document_folders",
+          "document_search",
+          "document_open",
+          "document_read_page",
+          "document_go_to_page",
+          "facetime_call",
+          "contacts_search",
+          "facetime_call_contact"
+        ]
+      },
+      "uniqueItems": true,
+      "maxItems": 28
+    },
+    "event_types": {
+      "enum": [
+        [],
+        [
+          "timer.finished"
+        ]
+      ]
+    },
+    "model_tools_available": {
+      "type": "boolean"
+    },
+    "granted_scope": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "apple_event_create",
+          "apple_event_delete",
+          "apple_event_list",
+          "apple_event_update",
+          "apple_reminder_create",
+          "apple_reminder_delete",
+          "apple_reminder_list",
+          "apple_reminder_update",
+          "context_get",
+          "demo_echo",
+          "document_folders",
+          "document_go_to_page",
+          "document_open",
+          "document_read_page",
+          "document_search",
+          "facetime_call",
+          "note_append",
+          "note_create",
+          "note_get",
+          "note_search",
+          "place_search",
+          "route_plan",
+          "timer.events.receive",
+          "timer.events.speak",
+          "timer_cancel",
+          "timer_list",
+          "timer_start",
+          "weather_get",
+          "contacts_search",
+          "facetime_call_contact"
+        ]
+      },
+      "uniqueItems": true,
+      "maxItems": 30
+    }
+  },
+  "required": [
+    "binding_version",
+    "protocol",
+    "profile",
+    "device_id",
+    "state",
+    "binding_revision",
+    "session_id",
+    "generation_id",
+    "scope",
+    "connected",
+    "poll_after_ms",
+    "workspace_id",
+    "context_id",
+    "authorization_revision",
+    "available_tools",
+    "event_types",
+    "model_tools_available",
+    "granted_scope"
+  ],
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "model_tools_available": {
+            "const": true
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "state": {
+            "const": "authorized"
+          },
+          "session_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256,
+            "pattern": "^[!-~]+$"
+          },
+          "available_tools": {
+            "minItems": 1
+          },
+          "connected": {
+            "const": true
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "state": {
+            "const": "backend_adapter_pending"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "scope": {
+            "const": []
+          },
+          "available_tools": {
+            "const": []
+          },
+          "model_tools_available": {
+            "const": false
+          }
+        }
+      }
+    }
+  ]
+}

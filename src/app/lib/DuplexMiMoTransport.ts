@@ -13,6 +13,16 @@ type DuplexMiMoTransportOptions = {
   sampleRateHz?: number;
 };
 
+function canonicalArguments(value: unknown): string {
+  if (value && typeof value === 'object' && !Array.isArray(value)) {
+    return JSON.stringify(Object.fromEntries(
+      Object.entries(value).sort(([a], [b]) => a.localeCompare(b))
+        .map(([key, item]) => [key, JSON.parse(canonicalArguments(item))]),
+    ));
+  }
+  return JSON.stringify(value);
+}
+
 export type DuplexMiMoVideoFrame = {
   format: 'jpeg';
   data: string;
@@ -32,6 +42,12 @@ export class DuplexMiMoTransport extends OpenAIRealtimeBase {
   private currentResponseId: string | null = null;
   private currentItemId: string | null = null;
   private currentText = '';
+  private toolCalls = new Map<string, { name: string; arguments: string }>();
+  private macPending = new Map<string, {
+    resolve: (output: string) => void;
+    reject: (error: Error) => void;
+    timer: ReturnType<typeof setTimeout>;
+  }>();
 
   constructor(options: DuplexMiMoTransportOptions) {
     super();
@@ -76,6 +92,7 @@ export class DuplexMiMoTransport extends OpenAIRealtimeBase {
         reject(error);
       });
       socket.addEventListener('close', () => {
+        this.cancelMacCalls();
         this.socket = null;
         this.connectionStatus = 'disconnected';
         this.emit('connection_change', 'disconnected');
@@ -114,6 +131,7 @@ export class DuplexMiMoTransport extends OpenAIRealtimeBase {
         }
         throw new Error('Unsupported duplex MiMo conversation item: ' + event.item?.type);
       case 'response.cancel':
+        this.cancelMacCalls();
         this.sendJson({ type: 'response.cancel' });
         return;
       default:
@@ -131,6 +149,8 @@ export class DuplexMiMoTransport extends OpenAIRealtimeBase {
     _startResponse = true,
   ): void {
     void _startResponse;
+    if (!this.toolCalls.has(toolCall.callId)) return;
+    this.toolCalls.delete(toolCall.callId);
     this.sendJson({
       type: 'agent.function_call_output',
       call_id: toolCall.callId,
@@ -183,11 +203,63 @@ export class DuplexMiMoTransport extends OpenAIRealtimeBase {
     this.sendJson({ type: 'playback.state', active });
   }
 
+  requestMacStatus(): void {
+    this.sendJson({ type: 'agent.mac.status' });
+  }
+
+  sendRaw(event: Record<string, unknown>): void {
+    this.sendJson(event);
+  }
+
+  bindMac(pairingCode: string): void {
+    this.sendJson({
+      type: 'agent.mac.bind', pairing_code: pairingCode, confirmed: true,
+    });
+  }
+
+  revokeMac(): void {
+    this.sendJson({ type: 'agent.mac.revoke' });
+  }
+
+  async executeMacEcho(arguments_: { text: string }): Promise<string> {
+    return this.executeMacTool('demo_echo', arguments_);
+  }
+
+  async executeMacTool(name: string, arguments_: Record<string, unknown>): Promise<string> {
+    const serialized = canonicalArguments(arguments_);
+    const call = [...this.toolCalls].find(([, value]) => (
+      value.name === name
+      && canonicalArguments(JSON.parse(value.arguments)) === serialized
+    ));
+    if (!call || this.macPending.has(call[0])) {
+      throw new Error('No pending Mac tool call');
+    }
+    const callId = call[0];
+    return new Promise((resolve, reject) => {
+      const timer = setTimeout(() => {
+        this.macPending.delete(callId);
+        reject(new Error('Mac bridge response timed out'));
+      }, name === 'demo_echo' ? 10_000 : 85_000);
+      this.macPending.set(callId, { resolve, reject, timer });
+      try {
+        this.sendJson({
+          type: name === 'demo_echo' ? 'agent.mac.invoke' : 'agent.mac.m2.invoke',
+          name, call_id: callId, arguments: arguments_,
+        });
+      } catch (error) {
+        clearTimeout(timer);
+        this.macPending.delete(callId);
+        reject(error instanceof Error ? error : new Error(String(error)));
+      }
+    });
+  }
+
   mute(muted: boolean): void {
     this.mutedState = muted;
   }
 
   interrupt(): void {
+    this.cancelMacCalls();
     this.sendJson({ type: 'response.cancel' });
     this.emit('audio_interrupted');
   }
@@ -195,10 +267,12 @@ export class DuplexMiMoTransport extends OpenAIRealtimeBase {
   resetHistory(_oldHistory: RealtimeItem[], _newHistory: RealtimeItem[]): void {
     void _oldHistory;
     void _newHistory;
+    this.cancelMacCalls();
     this.sendJson({ type: 'reset' });
   }
 
   close(): void {
+    this.cancelMacCalls();
     if (!this.socket) return;
     this.connectionStatus = 'disconnecting';
     this.socket.close();
@@ -285,6 +359,7 @@ export class DuplexMiMoTransport extends OpenAIRealtimeBase {
         return;
       case 'chat.cancelled':
       case 'tts.cancelled':
+        this.cancelMacCalls();
         if (this.currentItemId && this.currentText) {
           if (event.retained && !this.currentText.endsWith('⏸')) {
             this.currentText += '⏸';
@@ -294,6 +369,9 @@ export class DuplexMiMoTransport extends OpenAIRealtimeBase {
         this.emit('audio_interrupted');
         return;
       case 'agent.function_call': {
+        this.toolCalls.set(event.call_id, {
+          name: event.name, arguments: event.arguments,
+        });
         const item = {
           itemId: event.call_id,
           type: 'function_call' as const,
@@ -312,12 +390,30 @@ export class DuplexMiMoTransport extends OpenAIRealtimeBase {
         });
         return;
       }
+      case 'agent.mac.result': {
+        const pending = this.macPending.get(event.call_id);
+        if (!pending) return;
+        clearTimeout(pending.timer);
+        this.macPending.delete(event.call_id);
+        if (typeof event.output === 'string') pending.resolve(event.output);
+        else pending.reject(new Error(String(event.error ?? 'Mac bridge failed')));
+        return;
+      }
       case 'error':
       case 'chat.error':
       case 'tts.error':
         this.emit('error', { type: 'error', error: new Error(event.message) });
         return;
     }
+  }
+
+  private cancelMacCalls() {
+    this.toolCalls.clear();
+    for (const pending of this.macPending.values()) {
+      clearTimeout(pending.timer);
+      pending.reject(new Error('Mac call interrupted'));
+    }
+    this.macPending.clear();
   }
 
   private emitAssistantItem(status: 'in_progress' | 'completed') {

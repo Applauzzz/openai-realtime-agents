@@ -186,13 +186,15 @@ export function useDuplexMedia() {
     source.start(startAt);
   }, []);
 
-  const stop = useCallback(async () => {
-    flushAudio();
+  const stop = useCallback(async (discardPending = false) => {
+    if (!discardPending) flushAudio();
     captureNodeRef.current?.disconnect();
     captureNodeRef.current = null;
     inputStreamRef.current?.getTracks().forEach((track) => track.stop());
     inputStreamRef.current = null;
-    await inputContextRef.current?.close();
+    if (inputContextRef.current?.state !== 'closed') {
+      await inputContextRef.current?.close();
+    }
     inputContextRef.current = null;
     pendingRef.current = [];
     pendingSamplesRef.current = 0;
@@ -217,5 +219,6 @@ export function useDuplexMedia() {
     setCamera,
     playPcm,
     stopPlayback,
+    pauseCapture: () => stop(true),
   };
 }

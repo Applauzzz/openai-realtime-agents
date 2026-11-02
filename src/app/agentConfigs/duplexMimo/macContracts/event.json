@@ -1,0 +1,164 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:duplex:m2-demo:v1:event",
+  "title": "M2 demo event receipt v2 \u2014 contract foundation, not mounted",
+  "$comment": "HTTP/WS demo authorized by user. Persist before ack. Ack does not mean spoken. Key=(device_id,event_id), conflicting immutable payload rejected. Receipt is independent of voice WS.",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/event"
+    },
+    {
+      "$ref": "#/$defs/ack"
+    }
+  ],
+  "$defs": {
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "^[!-~]+$"
+    },
+    "event": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "protocol",
+        "type",
+        "device_id",
+        "event_id",
+        "event_type",
+        "occurred_at",
+        "expires_at",
+        "context_id",
+        "context_revision",
+        "object_id",
+        "data",
+        "workspace_id",
+        "origin_invocation_id",
+        "origin_session_id"
+      ],
+      "properties": {
+        "protocol": {
+          "const": "duplex-mac-tools/v2"
+        },
+        "type": {
+          "const": "local.event"
+        },
+        "device_id": {
+          "$ref": "#/$defs/id"
+        },
+        "event_id": {
+          "$ref": "#/$defs/id"
+        },
+        "event_type": {
+          "const": "timer.finished"
+        },
+        "occurred_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "expires_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "context_id": {
+          "$ref": "#/$defs/id"
+        },
+        "context_revision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "object_id": {
+          "$ref": "#/$defs/id"
+        },
+        "data": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "timer_id",
+            "label",
+            "due_at"
+          ],
+          "properties": {
+            "timer_id": {
+              "$ref": "#/$defs/id"
+            },
+            "label": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 120
+            },
+            "due_at": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        },
+        "workspace_id": {
+          "$ref": "#/$defs/id"
+        },
+        "origin_invocation_id": {
+          "$ref": "#/$defs/id"
+        },
+        "origin_session_id": {
+          "$ref": "#/$defs/id"
+        }
+      }
+    },
+    "ack": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "protocol",
+        "type",
+        "device_id",
+        "workspace_id",
+        "context_id",
+        "event_id",
+        "receipt_id",
+        "status",
+        "delivery_state"
+      ],
+      "properties": {
+        "protocol": {
+          "const": "duplex-mac-tools/v2"
+        },
+        "type": {
+          "const": "local.event_ack"
+        },
+        "device_id": {
+          "$ref": "#/$defs/id"
+        },
+        "workspace_id": {
+          "$ref": "#/$defs/id"
+        },
+        "context_id": {
+          "$ref": "#/$defs/id"
+        },
+        "event_id": {
+          "$ref": "#/$defs/id"
+        },
+        "receipt_id": {
+          "$ref": "#/$defs/id"
+        },
+        "status": {
+          "enum": [
+            "persisted",
+            "duplicate"
+          ]
+        },
+        "delivery_state": {
+          "enum": [
+            "queued",
+            "dispatching",
+            "submitted",
+            "interrupted",
+            "delivery_unknown",
+            "expired",
+            "suppressed"
+          ]
+        }
+      }
+    }
+  }
+}

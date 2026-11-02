@@ -1,0 +1,972 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:duplex:contacts:v1:bridge",
+  "title": "Contacts profile v2 wire frames; candidate contract, not loaded",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/call"
+    },
+    {
+      "$ref": "#/$defs/result"
+    },
+    {
+      "$ref": "#/$defs/manifest"
+    },
+    {
+      "$ref": "#/$defs/manifest_ack"
+    },
+    {
+      "$ref": "#/$defs/cancel"
+    },
+    {
+      "$ref": "#/$defs/result_ack"
+    },
+    {
+      "$ref": "#/$defs/session_update"
+    }
+  ],
+  "$defs": {
+    "call": {
+      "type": "object",
+      "properties": {
+        "protocol": {
+          "const": "duplex-mac-tools/v2"
+        },
+        "type": {
+          "const": "tool.call"
+        },
+        "device_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[!-~]+$"
+        },
+        "workspace_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[!-~]+$"
+        },
+        "context_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[!-~]+$"
+        },
+        "session_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[!-~]+$"
+        },
+        "generation_id": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "call_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[!-~]+$"
+        },
+        "invocation_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[!-~]+$"
+        },
+        "tool_name": {
+          "enum": [
+            "demo_echo",
+            "context_get",
+            "note_create",
+            "note_get",
+            "note_append",
+            "note_search",
+            "timer_start",
+            "timer_list",
+            "timer_cancel",
+            "weather_get",
+            "place_search",
+            "route_plan",
+            "apple_reminder_create",
+            "apple_reminder_list",
+            "apple_reminder_update",
+            "apple_reminder_delete",
+            "apple_event_create",
+            "apple_event_list",
+            "apple_event_update",
+            "apple_event_delete",
+            "document_folders",
+            "document_search",
+            "document_open",
+            "document_read_page",
+            "document_go_to_page",
+            "facetime_call",
+            "contacts_search",
+            "facetime_call_contact"
+          ]
+        },
+        "arguments": {
+          "type": "object"
+        },
+        "timeout_ms": {
+          "const": 5000
+        },
+        "authorization_revision": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "protocol",
+        "type",
+        "device_id",
+        "workspace_id",
+        "context_id",
+        "session_id",
+        "generation_id",
+        "call_id",
+        "invocation_id",
+        "tool_name",
+        "arguments",
+        "timeout_ms",
+        "authorization_revision"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "tool_name": {
+                "const": "demo_echo"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "arguments": {
+                "additionalProperties": false,
+                "properties": {
+                  "text": {
+                    "maxLength": 200,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "text"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "tool_name": {
+                "const": "context_get"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "arguments": {
+                "additionalProperties": false,
+                "properties": {},
+                "required": [],
+                "type": "object"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "tool_name": {
+                "const": "note_create"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "arguments": {
+                "additionalProperties": false,
+                "properties": {
+                  "body": {
+                    "maxLength": 2000,
+                    "minLength": 0,
+                    "type": "string"
+                  },
+                  "title": {
+                    "maxLength": 120,
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "title",
+                  "body"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "tool_name": {
+                "const": "note_get"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "arguments": {
+                "additionalProperties": false,
+                "properties": {
+                  "note_id": {
+                    "maxLength": 256,
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "note_id"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "tool_name": {
+                "const": "note_append"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "arguments": {
+                "additionalProperties": false,
+                "properties": {
+                  "expected_revision": {
+                    "maximum": 2147483647,
+                    "minimum": 1,
+                    "type": "integer"
+                  },
+                  "note_id": {
+                    "maxLength": 256,
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "text": {
+                    "maxLength": 2000,
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "note_id",
+                  "text",
+                  "expected_revision"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "tool_name": {
+                "const": "note_search"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "arguments": {
+                "additionalProperties": false,
+                "properties": {
+                  "limit": {
+                    "maximum": 10,
+                    "minimum": 1,
+                    "type": "integer"
+                  },
+                  "query": {
+                    "maxLength": 120,
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "query"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "tool_name": {
+                "const": "timer_start"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "arguments": {
+                "additionalProperties": false,
+                "properties": {
+                  "duration_seconds": {
+                    "maximum": 86400,
+                    "minimum": 1,
+                    "type": "integer"
+                  },
+                  "label": {
+                    "maxLength": 120,
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "label",
+                  "duration_seconds"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "tool_name": {
+                "const": "timer_list"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "arguments": {
+                "additionalProperties": false,
+                "properties": {
+                  "limit": {
+                    "maximum": 20,
+                    "minimum": 1,
+                    "type": "integer"
+                  },
+                  "state": {
+                    "enum": [
+                      "all",
+                      "running",
+                      "finished",
+                      "cancelled"
+                    ],
+                    "type": "string"
+                  }
+                },
+                "required": [],
+                "type": "object"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "tool_name": {
+                "const": "timer_cancel"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "arguments": {
+                "additionalProperties": false,
+                "properties": {
+                  "timer_id": {
+                    "maxLength": 256,
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "timer_id"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "result": {
+      "type": "object",
+      "properties": {
+        "protocol": {
+          "const": "duplex-mac-tools/v2"
+        },
+        "type": {
+          "const": "tool.result"
+        },
+        "device_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[!-~]+$"
+        },
+        "workspace_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[!-~]+$"
+        },
+        "context_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[!-~]+$"
+        },
+        "session_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[!-~]+$"
+        },
+        "generation_id": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "call_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[!-~]+$"
+        },
+        "invocation_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[!-~]+$"
+        },
+        "status": {
+          "enum": [
+            "succeeded",
+            "failed",
+            "cancelled",
+            "timed_out",
+            "unknown"
+          ]
+        },
+        "summary": {
+          "type": "string",
+          "maxLength": 2048
+        },
+        "data": {},
+        "error": {},
+        "stale": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "protocol",
+        "type",
+        "device_id",
+        "workspace_id",
+        "context_id",
+        "session_id",
+        "generation_id",
+        "call_id",
+        "invocation_id",
+        "status",
+        "summary",
+        "data",
+        "error",
+        "stale"
+      ],
+      "additionalProperties": false
+    },
+    "manifest": {
+      "type": "object",
+      "properties": {
+        "protocol": {
+          "const": "duplex-mac-tools/v2"
+        },
+        "type": {
+          "const": "tools.manifest"
+        },
+        "device_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[!-~]+$"
+        },
+        "workspace_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[!-~]+$"
+        },
+        "context_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[!-~]+$"
+        },
+        "profile": {
+          "const": "apple_contacts_facetime_demo_v1"
+        },
+        "mode": {
+          "const": "h20"
+        },
+        "mcp_protocol": {
+          "const": "2025-11-25"
+        },
+        "scope": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "apple_event_create",
+              "apple_event_delete",
+              "apple_event_list",
+              "apple_event_update",
+              "apple_reminder_create",
+              "apple_reminder_delete",
+              "apple_reminder_list",
+              "apple_reminder_update",
+              "context_get",
+              "demo_echo",
+              "document_folders",
+              "document_go_to_page",
+              "document_open",
+              "document_read_page",
+              "document_search",
+              "facetime_call",
+              "note_append",
+              "note_create",
+              "note_get",
+              "note_search",
+              "place_search",
+              "route_plan",
+              "timer.events.receive",
+              "timer.events.speak",
+              "timer_cancel",
+              "timer_list",
+              "timer_start",
+              "weather_get",
+              "contacts_search",
+              "facetime_call_contact"
+            ]
+          },
+          "uniqueItems": true,
+          "maxItems": 30
+        },
+        "tools": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "enum": [
+                  "demo_echo",
+                  "context_get",
+                  "note_create",
+                  "note_get",
+                  "note_append",
+                  "note_search",
+                  "timer_start",
+                  "timer_list",
+                  "timer_cancel",
+                  "weather_get",
+                  "place_search",
+                  "route_plan",
+                  "apple_reminder_create",
+                  "apple_reminder_list",
+                  "apple_reminder_update",
+                  "apple_reminder_delete",
+                  "apple_event_create",
+                  "apple_event_list",
+                  "apple_event_update",
+                  "apple_event_delete",
+                  "document_folders",
+                  "document_search",
+                  "document_open",
+                  "document_read_page",
+                  "document_go_to_page",
+                  "facetime_call",
+                  "contacts_search",
+                  "facetime_call_contact"
+                ]
+              },
+              "description": {
+                "type": "string",
+                "maxLength": 2048
+              },
+              "inputSchema": {
+                "type": "object"
+              },
+              "outputSchema": {
+                "type": "object"
+              }
+            },
+            "required": [
+              "name",
+              "description",
+              "inputSchema",
+              "outputSchema"
+            ],
+            "additionalProperties": false
+          },
+          "maxItems": 28
+        },
+        "event_types": {
+          "enum": [
+            [],
+            [
+              "timer.finished"
+            ]
+          ]
+        }
+      },
+      "required": [
+        "protocol",
+        "type",
+        "device_id",
+        "workspace_id",
+        "context_id",
+        "profile",
+        "mode",
+        "mcp_protocol",
+        "scope",
+        "tools",
+        "event_types"
+      ],
+      "additionalProperties": false
+    },
+    "manifest_ack": {
+      "type": "object",
+      "properties": {
+        "protocol": {
+          "const": "duplex-mac-tools/v2"
+        },
+        "type": {
+          "const": "tools.manifest_ack"
+        },
+        "device_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[!-~]+$"
+        },
+        "workspace_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[!-~]+$"
+        },
+        "context_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[!-~]+$"
+        },
+        "profile": {
+          "const": "apple_contacts_facetime_demo_v1"
+        },
+        "session_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[!-~]+$"
+        },
+        "generation_id": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "authorization_revision": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "scope": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "apple_event_create",
+              "apple_event_delete",
+              "apple_event_list",
+              "apple_event_update",
+              "apple_reminder_create",
+              "apple_reminder_delete",
+              "apple_reminder_list",
+              "apple_reminder_update",
+              "context_get",
+              "demo_echo",
+              "document_folders",
+              "document_go_to_page",
+              "document_open",
+              "document_read_page",
+              "document_search",
+              "facetime_call",
+              "note_append",
+              "note_create",
+              "note_get",
+              "note_search",
+              "place_search",
+              "route_plan",
+              "timer.events.receive",
+              "timer.events.speak",
+              "timer_cancel",
+              "timer_list",
+              "timer_start",
+              "weather_get",
+              "contacts_search",
+              "facetime_call_contact"
+            ]
+          },
+          "uniqueItems": true,
+          "maxItems": 30
+        },
+        "available_tools": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "demo_echo",
+              "context_get",
+              "note_create",
+              "note_get",
+              "note_append",
+              "note_search",
+              "timer_start",
+              "timer_list",
+              "timer_cancel",
+              "weather_get",
+              "place_search",
+              "route_plan",
+              "apple_reminder_create",
+              "apple_reminder_list",
+              "apple_reminder_update",
+              "apple_reminder_delete",
+              "apple_event_create",
+              "apple_event_list",
+              "apple_event_update",
+              "apple_event_delete",
+              "document_folders",
+              "document_search",
+              "document_open",
+              "document_read_page",
+              "document_go_to_page",
+              "facetime_call",
+              "contacts_search",
+              "facetime_call_contact"
+            ]
+          },
+          "uniqueItems": true,
+          "maxItems": 28
+        },
+        "event_types": {
+          "enum": [
+            [],
+            [
+              "timer.finished"
+            ]
+          ]
+        }
+      },
+      "required": [
+        "protocol",
+        "type",
+        "device_id",
+        "workspace_id",
+        "context_id",
+        "profile",
+        "session_id",
+        "generation_id",
+        "authorization_revision",
+        "scope",
+        "available_tools",
+        "event_types"
+      ],
+      "additionalProperties": false
+    },
+    "cancel": {
+      "type": "object",
+      "properties": {
+        "protocol": {
+          "const": "duplex-mac-tools/v2"
+        },
+        "type": {
+          "const": "tool.cancel"
+        },
+        "device_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[!-~]+$"
+        },
+        "workspace_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[!-~]+$"
+        },
+        "context_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[!-~]+$"
+        },
+        "session_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[!-~]+$"
+        },
+        "generation_id": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "call_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[!-~]+$"
+        },
+        "invocation_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[!-~]+$"
+        }
+      },
+      "required": [
+        "protocol",
+        "type",
+        "device_id",
+        "workspace_id",
+        "context_id",
+        "session_id",
+        "generation_id",
+        "call_id",
+        "invocation_id"
+      ],
+      "additionalProperties": false
+    },
+    "result_ack": {
+      "type": "object",
+      "properties": {
+        "protocol": {
+          "const": "duplex-mac-tools/v2"
+        },
+        "type": {
+          "const": "tool.result_ack"
+        },
+        "device_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[!-~]+$"
+        },
+        "workspace_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[!-~]+$"
+        },
+        "context_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[!-~]+$"
+        },
+        "invocation_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[!-~]+$"
+        },
+        "status": {
+          "enum": [
+            "persisted",
+            "duplicate"
+          ]
+        },
+        "delivery": {
+          "const": "archived"
+        }
+      },
+      "required": [
+        "protocol",
+        "type",
+        "device_id",
+        "workspace_id",
+        "context_id",
+        "invocation_id",
+        "status",
+        "delivery"
+      ],
+      "additionalProperties": false
+    },
+    "session_update": {
+      "type": "object",
+      "properties": {
+        "protocol": {
+          "const": "duplex-mac-tools/v2"
+        },
+        "device_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[!-~]+$"
+        },
+        "workspace_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[!-~]+$"
+        },
+        "context_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[!-~]+$"
+        },
+        "session_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[!-~]+$"
+        },
+        "generation_id": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "authorization_revision": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "type": {
+          "const": "session.update"
+        }
+      },
+      "required": [
+        "protocol",
+        "device_id",
+        "workspace_id",
+        "context_id",
+        "session_id",
+        "generation_id",
+        "authorization_revision",
+        "type"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "$comment": "Contract revision 2 (2026-10-18): authoritative session.update; revision fields explicit; timer_finished is a failed result."
+}

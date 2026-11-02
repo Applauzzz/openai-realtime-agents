@@ -8,9 +8,12 @@ import {
   LoaderCircle,
   Mic,
   MicOff,
+  Monitor,
   Phone,
   PhoneOff,
   Radio,
+  Link,
+  Unlink,
   Volume2,
   Wrench,
 } from 'lucide-react';
@@ -22,7 +25,8 @@ import {
   type RealtimeToolCallItem,
 } from '@openai/agents/realtime';
 
-import { duplexMimoScenario } from '../agentConfigs/duplexMimo';
+import { duplexMimoScenario, macEchoTool, macM2Tools, macToolInstructions } from '../agentConfigs/duplexMimo';
+import { RealtimeAgent } from '@openai/agents/realtime';
 import { useDuplexMedia } from '../hooks/useDuplexMedia';
 import { DuplexMiMoTransport } from '../lib/DuplexMiMoTransport';
 
@@ -41,6 +45,16 @@ type ConversationMessage = Extract<
 >;
 
 type ConversationItem = ConversationMessage | RealtimeToolCallItem;
+
+async function browserGrant(action: string, body: Record<string, unknown> = {}) {
+  const response = await fetch(`/api/tools/browser/${action}`, {
+    method: 'POST', credentials: 'same-origin',
+    headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+  });
+  const value = await response.json();
+  if (!response.ok) throw new Error(value.error ?? 'Browser authorization failed');
+  return value;
+}
 
 function defaultWebSocketUrl() {
   if (typeof window === 'undefined') return 'ws://127.0.0.1:8081/ws';
@@ -80,7 +94,28 @@ export default function DuplexMiMoPage() {
   const [audioEnabled, setAudioEnabled] = useState(true);
   const audioEnabledRef = useRef(true);
   const [errorMessage, setErrorMessage] = useState('');
-  const sessionRef = useRef<RealtimeSession | null>(null);
+  const [pairingCode, setPairingCode] = useState('');
+  const [rememberBrowser, setRememberBrowser] = useState(true);
+  const [browserTrusted, setBrowserTrusted] = useState(false);
+  const pendingRememberRef = useRef(false);
+  const connectingRef = useRef(false);
+  const restoreAttemptsRef = useRef(0);
+  const [m2Options, setM2Options] = useState<{
+    groups: Record<string, string[]>; allowed_scope: string[];
+  } | null>(null);
+  const [m2Scope, setM2Scope] = useState<string[]>([]);
+  const [m2Names, setM2Names] = useState<string[]>([]);
+  const [capturePaused, setCapturePaused] = useState(false);
+  const capturePausedRef = useRef(false);
+  const [confirmation, setConfirmation] = useState<{
+    call_id: string; name: string; arguments: Record<string, unknown>;
+  } | null>(null);
+  const [macStatus, setMacStatus] = useState<{
+    enabled: boolean; connected: boolean; device_id?: string | null;
+  }>({ enabled: false, connected: false });
+  const sessionRef = useRef<RealtimeSession<{
+    macTransport: DuplexMiMoTransport; history: RealtimeItem[];
+  }> | null>(null);
   const transportRef = useRef<DuplexMiMoTransport | null>(null);
   const conversationScrollRef = useRef<HTMLDivElement | null>(null);
   const followConversationRef = useRef(true);
@@ -94,14 +129,17 @@ export default function DuplexMiMoPage() {
     setCamera,
     playPcm,
     stopPlayback,
+    pauseCapture,
   } = useDuplexMedia();
+  const pauseCaptureRef = useRef(pauseCapture);
+  pauseCaptureRef.current = pauseCapture;
 
   const appendActivity = useCallback((item: ActivityItem) => {
     setActivity((current) => [...current.slice(-39), item]);
   }, []);
 
   const connect = useCallback(async () => {
-    if (connectionState !== 'disconnected' && connectionState !== 'error') return;
+    if (connectingRef.current || sessionRef.current) return;
     if (!navigator.mediaDevices?.getUserMedia) {
       setConnectionState('error');
       setErrorMessage(
@@ -110,6 +148,7 @@ export default function DuplexMiMoPage() {
       return;
     }
     setConnectionState('connecting');
+    connectingRef.current = true;
     setErrorMessage('');
     const transport = new DuplexMiMoTransport({
       url: defaultWebSocketUrl(),
@@ -119,8 +158,23 @@ export default function DuplexMiMoPage() {
         retain_interrupted_context: true,
       },
     });
-    const session = new RealtimeSession(duplexMimoScenario[0], {
+    const baselineAgent = duplexMimoScenario[0];
+    if (typeof baselineAgent.instructions !== 'string') {
+      throw new Error('Duplex MiMo requires manifest instructions');
+    }
+    const agent = new RealtimeAgent<{
+      macTransport: DuplexMiMoTransport; history: RealtimeItem[];
+    }>({
+      name: baselineAgent.name,
+      instructions: baselineAgent.instructions + macToolInstructions,
+      tools: [...baselineAgent.tools],
+      handoffs: baselineAgent.handoffs.filter(
+        (handoff): handoff is RealtimeAgent => handoff instanceof RealtimeAgent,
+      ),
+    });
+    const session = new RealtimeSession(agent, {
       transport,
+      context: { macTransport: transport, history: [] },
       model: 'mimo-v2.6-flash',
       tracingDisabled: true,
     });
@@ -153,6 +207,65 @@ export default function DuplexMiMoPage() {
       });
     });
     session.on('transport_event', (event) => {
+      if (event.type === 'agent.mac.m2.options') {
+        setM2Options(event as any);
+      }
+      if (event.type === 'agent.mac.m2.confirmation') {
+        setConfirmation(event as any);
+      }
+      if (event.type === 'agent.capture.pause') {
+        capturePausedRef.current = true;
+        void pauseCaptureRef.current().then(() => {
+          setCapturePaused(true);
+          transport.sendRaw({ type: 'agent.capture.paused', request_id: event.request_id, stopped: true });
+        }).catch(() => {
+          transport.sendRaw({ type: 'agent.capture.paused', request_id: event.request_id, stopped: false });
+        });
+      }
+      if (event.type === 'agent.mac.timer.finished') {
+        appendActivity({
+          id: String(event.event_id), kind: 'system', title: 'Timer finished',
+          detail: JSON.stringify(event.data),
+        });
+      }
+      if (event.type === 'agent.mac.m2.status') {
+        const names = Array.isArray(event.available_tools) ? event.available_tools as string[] : [];
+        setM2Names(names);
+        if (Array.isArray(event.scope)) setM2Scope(event.scope as string[]);
+        agent.tools = agent.tools.filter((tool) => !macM2Tools.some((m2) => m2.name === tool.name));
+        agent.tools.push(...macM2Tools.filter((tool) => names.includes(tool.name)));
+        void session.updateAgent(agent).catch((error) => setErrorMessage(String(error)));
+      }
+      if (event.type === 'chat.cancelled' || event.type === 'tts.cancelled') {
+        setConfirmation(null);
+      }
+      if (event.type === 'agent.mac.status') {
+        if (event.device_id) restoreAttemptsRef.current = 0;
+        if (event.device_id && pendingRememberRef.current && typeof event.session_id === 'string') {
+          pendingRememberRef.current = false;
+          void browserGrant('remember', { session_id: event.session_id, confirmed: true })
+            .then(() => setBrowserTrusted(true))
+            .catch((error) => setErrorMessage(String(error)));
+        }
+        setMacStatus({
+          enabled: Boolean(event.enabled), connected: Boolean(event.connected),
+          device_id: typeof event.device_id === 'string' ? event.device_id : null,
+        });
+        agent.tools = agent.tools.filter((tool) => tool.name !== 'demo_echo');
+        if (event.connected) agent.tools.push(macEchoTool);
+        void session.updateAgent(agent).catch((error) => {
+          setErrorMessage(error instanceof Error ? error.message : String(error));
+        });
+      }
+      if (event.type === 'agent.mac.error') {
+        if (event.message === 'binding_conflict' && restoreAttemptsRef.current++ < 5) {
+          window.setTimeout(() => {
+            if (transportRef.current === transport) transport.requestMacStatus();
+          }, 1000);
+        } else {
+          setErrorMessage(String(event.message));
+        }
+      }
       if (event.type === 'chat.started') {
         const frameCount = Number(event.video_frame_count ?? 0);
         appendActivity({
@@ -177,9 +290,10 @@ export default function DuplexMiMoPage() {
       }
     });
     session.on('audio', (event) => {
-      if (audioEnabledRef.current) void playPcm(event.data);
+      if (audioEnabledRef.current && !capturePausedRef.current) void playPcm(event.data);
     });
     session.on('audio_interrupted', () => {
+      setConfirmation(null);
       stopPlayback();
       appendActivity({
         id: crypto.randomUUID(),
@@ -198,9 +312,27 @@ export default function DuplexMiMoPage() {
       });
     });
     try {
+      try {
+        const grant = await browserGrant('status');
+        setBrowserTrusted(Boolean(grant.trusted));
+        if (grant.capture_paused) {
+          capturePausedRef.current = true;
+          setCapturePaused(true);
+        }
+      } catch {
+        // Ordinary connection remains available when browser trust is unavailable.
+      }
       await session.connect({ apiKey: 'duplex-mimo-local' });
-      await start(transport);
+      transport.requestMacStatus();
+      if (!capturePausedRef.current) {
+        await start(transport);
+      } else {
+        await pauseCaptureRef.current();
+        transport.sendRaw({ type: 'agent.capture.hold' });
+      }
+      transport.sendRaw({ type: 'agent.capture.ready', supported: true });
       setConnectionState('connected');
+      connectingRef.current = false;
       appendActivity({
         id: crypto.randomUUID(),
         kind: 'system',
@@ -213,11 +345,11 @@ export default function DuplexMiMoPage() {
       sessionRef.current = null;
       transportRef.current = null;
       setConnectionState('error');
+      connectingRef.current = false;
       setErrorMessage(String(error));
     }
   }, [
     appendActivity,
-    connectionState,
     playPcm,
     start,
     stop,
@@ -225,17 +357,27 @@ export default function DuplexMiMoPage() {
   ]);
 
   const disconnect = useCallback(async () => {
+    connectingRef.current = false;
     sessionRef.current?.close();
     sessionRef.current = null;
     transportRef.current = null;
     await stop();
     setConnectionState('disconnected');
+    setMacStatus({ enabled: false, connected: false });
+    setConfirmation(null);
+    setM2Names([]);
+    setM2Options(null);
+    setM2Scope([]);
     appendActivity({
       id: crypto.randomUUID(),
       kind: 'system',
       title: 'Session disconnected',
     });
   }, [appendActivity, stop]);
+
+  useEffect(() => () => {
+    sessionRef.current?.close();
+  }, []);
 
   const interrupt = useCallback(() => {
     sessionRef.current?.interrupt();
@@ -277,6 +419,16 @@ export default function DuplexMiMoPage() {
   }, [conversationItems]);
 
   const connected = connectionState === 'connected';
+  const availableMacTools = connected
+    ? [...(macStatus.connected ? ['demo_echo'] : []), ...m2Names]
+    : [];
+  const macOnline = availableMacTools.length > 0;
+  const macConnectionLabel = !connected ? 'Offline'
+    : macOnline ? 'Online'
+    : macStatus.device_id ? 'Waiting for Mac'
+    : macStatus.enabled ? 'Not paired' : 'Unavailable';
+  const macStatusColor = macOnline ? 'text-[#248a52]'
+    : connected && macStatus.device_id ? 'text-[#9a6825]' : 'text-[#68717d]';
 
   return (
     <main className="min-h-screen bg-[#f3f5f7] text-[#17202a]">
@@ -291,7 +443,7 @@ export default function DuplexMiMoPage() {
               <p className="text-xs text-[#68717d]">VAD-gated audio and video session</p>
             </div>
           </div>
-          <div className="flex min-w-0 items-center gap-2 text-sm">
+          <div className="flex min-w-0 flex-wrap items-center gap-2 text-sm">
             <span className="text-[#68717d]">Agent</span>
             <strong className="max-w-36 truncate rounded bg-[#e8edf2] px-2 py-1 font-medium">
               {currentAgent}
@@ -304,6 +456,17 @@ export default function DuplexMiMoPage() {
               aria-label={connectionState}
             />
             <span className="capitalize text-[#4f5965]">{connectionState}</span>
+            <div
+              role="status"
+              aria-label={`Mac tools ${macConnectionLabel}`}
+              title={availableMacTools.join(', ') || macConnectionLabel}
+              className={`flex items-center gap-2 border-l border-[#d8dde3] pl-3 ${macStatusColor}`}
+            >
+              <Monitor size={16} aria-hidden="true" />
+              <span className="h-2 w-2 shrink-0 rounded-full bg-current" aria-hidden="true" />
+              <span>Mac tools <strong className="font-semibold">{macConnectionLabel}</strong></span>
+              {macOnline && <span className="text-xs">({availableMacTools.length})</span>}
+            </div>
           </div>
         </div>
       </header>
@@ -390,8 +553,172 @@ export default function DuplexMiMoPage() {
                 className="h-full w-full object-cover"
               />
             </div>
+
+            <div className="space-y-2 border-t border-[#e2e6ea] pt-4">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="text-sm font-semibold">Mac tools</div>
+                <div className={`flex items-center gap-1.5 text-xs font-semibold ${macStatusColor}`}>
+                  <span className="h-2 w-2 shrink-0 rounded-full bg-current" aria-hidden="true" />
+                  {macConnectionLabel}
+                </div>
+              </div>
+              <div className="break-words text-xs text-[#68717d]">
+                {macStatus.device_id || 'No device'}
+              </div>
+              {macOnline && (
+                <div className="break-words text-xs text-[#248a52]">
+                  {availableMacTools.join(', ')}
+                </div>
+              )}
+              <input
+                aria-label="Mac pairing code"
+                value={pairingCode}
+                onChange={(event) => setPairingCode(event.target.value)}
+                placeholder="Pairing code"
+                disabled={!connected || !macStatus.enabled}
+                autoComplete="off"
+                className="h-9 w-full min-w-0 rounded-md border border-[#cfd5db] px-2 text-sm"
+              />
+              <button
+                type="button"
+                disabled={!connected || !macStatus.enabled || !pairingCode.trim()
+                  || Boolean(macStatus.device_id)}
+                onClick={() => {
+                  pendingRememberRef.current = rememberBrowser;
+                  transportRef.current?.bindMac(pairingCode.trim());
+                  setPairingCode('');
+                }}
+                className="flex h-9 w-full items-center justify-center gap-2 rounded-md border border-[#cfd5db] text-sm disabled:opacity-40"
+              >
+                <Link size={16} /> Authorize Mac echo
+              </button>
+              <label className="flex items-center gap-2 text-sm">
+                <input type="checkbox" checked={rememberBrowser}
+                  onChange={(event) => setRememberBrowser(event.target.checked)}
+                  disabled={browserTrusted} />
+                Remember this browser
+              </label>
+              {browserTrusted && (
+                <button type="button" onClick={async () => {
+                  try {
+                    await browserGrant('forget');
+                    setBrowserTrusted(false);
+                  } catch (error) { setErrorMessage(String(error)); }
+                }} className="flex h-9 w-full items-center justify-center gap-2 rounded-md border border-[#cfd5db] text-sm">
+                  <Unlink size={16} /> Forget browser
+                </button>
+              )}
+              <button
+                type="button"
+                disabled={!connected || !macStatus.device_id}
+                onClick={async () => {
+                  try {
+                    await browserGrant('forget');
+                    setBrowserTrusted(false);
+                    transportRef.current?.revokeMac();
+                  } catch (error) { setErrorMessage(String(error)); }
+                }}
+                className="flex h-9 w-full items-center justify-center gap-2 rounded-md border border-[#cfd5db] text-sm disabled:opacity-40"
+              >
+                <Unlink size={16} /> Revoke Mac
+              </button>
+              <button
+                type="button"
+                disabled={!connected || !macStatus.device_id}
+                onClick={() => transportRef.current?.sendRaw({ type: 'agent.mac.m2.options' })}
+                className="flex h-9 w-full items-center justify-center gap-2 rounded-md border border-[#cfd5db] text-sm disabled:opacity-40"
+              >
+                <Wrench size={16} /> Mac permissions
+              </button>
+              {m2Options && Object.entries(m2Options.groups).map(([group, names]) => {
+                const allowed = names.filter((name) => m2Options.allowed_scope.includes(name));
+                if (!allowed.length) return null;
+                return (
+                  <label key={group} className="flex items-center gap-2 text-sm">
+                    <input type="checkbox"
+                      checked={allowed.every((name) => m2Scope.includes(name))}
+                      onChange={(event) => setM2Scope((current) => event.target.checked
+                        ? [...new Set([...current, ...allowed])]
+                        : current.filter((name) => !allowed.includes(name)))}
+                    />
+                    {{ timers: 'Timers', weather_travel: 'Weather & routes',
+                      reminders: 'Apple Reminders', contacts_facetime: 'Contacts & FaceTime' }[group] ?? group}
+                  </label>
+                );
+              })}
+              {m2Options && (
+                <>
+                  <label className="flex items-center gap-2 text-sm">
+                    <input type="checkbox"
+                      disabled={!m2Options.allowed_scope.includes('timer.events.receive')}
+                      checked={m2Scope.includes('timer.events.receive')}
+                      onChange={(event) => setM2Scope((current) => event.target.checked
+                        ? [...new Set([...current, 'timer.events.receive'])]
+                        : current.filter((name) => name !== 'timer.events.receive'))}
+                    />
+                    Timer notifications
+                  </label>
+                  <button type="button" disabled={!connected || !m2Scope.length}
+                    onClick={() => transportRef.current?.sendRaw({
+                      type: 'agent.mac.m2.authorize', scope: m2Scope, confirmed: true,
+                    })}
+                    className="flex h-9 w-full items-center justify-center gap-2 rounded-md border border-[#cfd5db] text-sm disabled:opacity-40">
+                    <CheckCircle2 size={16} /> Authorize selected tools
+                  </button>
+                  <button type="button" disabled={!connected}
+                    onClick={() => transportRef.current?.sendRaw({ type: 'agent.mac.m2.revoke' })}
+                    className="flex h-9 w-full items-center justify-center gap-2 rounded-md border border-[#cfd5db] text-sm">
+                    <Unlink size={16} /> Revoke selected tools
+                  </button>
+                </>
+              )}
+              <div className="break-words text-xs text-[#68717d]">{m2Names.join(', ')}</div>
+              {capturePaused && (
+                <button type="button" disabled={!connected}
+                  onClick={async () => {
+                    if (!transportRef.current) return;
+                    try {
+                      await start(transportRef.current);
+                      transportRef.current.sendRaw({ type: 'agent.capture.resume' });
+                      capturePausedRef.current = false;
+                      setCapturePaused(false);
+                    } catch (error) {
+                      setErrorMessage(String(error));
+                    }
+                  }}
+                  className="flex h-9 w-full items-center justify-center gap-2 rounded-md border border-[#cfd5db] text-sm">
+                  <Mic size={16} /> Resume assistant
+                </button>
+              )}
+            </div>
           </div>
         </aside>
+        {confirmation && (
+          <div role="dialog" aria-modal="true" aria-label="Confirm Mac operation"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
+            <div className="w-full max-w-md rounded-md border border-[#cfd5db] bg-white p-4">
+              <h2 className="text-base font-semibold">{confirmation.name}</h2>
+              <pre className="my-4 max-h-72 overflow-auto whitespace-pre-wrap break-words text-sm">
+                {JSON.stringify(confirmation.arguments, null, 2)}
+              </pre>
+              <div className="flex justify-end gap-3">
+                {[false, true].map((approved) => (
+                  <button key={String(approved)} type="button"
+                    onClick={() => {
+                      transportRef.current?.sendRaw({
+                        type: 'agent.mac.m2.confirm', call_id: confirmation.call_id, approved,
+                      });
+                      setConfirmation(null);
+                    }}
+                    className="flex h-9 items-center gap-2 rounded-md border border-[#cfd5db] px-3 text-sm">
+                    {approved ? <CheckCircle2 size={16} /> : <CircleStop size={16} />}
+                    {approved ? 'Confirm' : 'Cancel'}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
 
         <section className="min-h-[72vh] border border-[#d8dde3] bg-white">
           <div className="flex items-center justify-between border-b border-[#e2e6ea] px-4 py-3">

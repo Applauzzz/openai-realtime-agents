@@ -1,0 +1,2435 @@
+{
+  "contract": "duplex-contacts-tools/v1",
+  "protocol": "duplex-mac-tools/v2",
+  "profile": "apple_contacts_facetime_demo_v1",
+  "mcp_protocol": "2025-11-25",
+  "status": "backend_source_prepared_H20_checks_pending_Mac_remote_adapter_pending",
+  "tools": [
+    {
+      "description": "\u65e0\u526f\u4f5c\u7528\u56de\u663e\uff0ctext \u6700\u591a 200 \u4e2a Unicode \u7801\u70b9\u3002",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "text": {
+            "maxLength": 200,
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "type": "object"
+      },
+      "name": "demo_echo",
+      "outputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {},
+          "error": {},
+          "status": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "summary",
+          "data",
+          "error"
+        ],
+        "type": "object"
+      },
+      "scope": "demo_echo",
+      "consent_label": "\u56de\u663e",
+      "mutating": false,
+      "dataSchema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 0
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "description": "\u521b\u5efa 1\u201386400 \u79d2\u672c\u5730\u6d4b\u8bd5\u5012\u8ba1\u65f6\uff0c\u6301\u4e45\u5316\u622a\u6b62\u65f6\u523b\u3002\u5230\u671f\u4e8b\u4ef6\u7b49\u5f85\u63a5\u6536\u65b9\u786e\u8ba4\uff0c\u4e0d\u81ea\u884c\u8bed\u97f3\u64ad\u62a5\u3002",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "duration_seconds": {
+            "maximum": 86400,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "label": {
+            "maxLength": 120,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "label",
+          "duration_seconds"
+        ],
+        "type": "object"
+      },
+      "name": "timer_start",
+      "outputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {},
+          "error": {},
+          "status": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "summary",
+          "data",
+          "error"
+        ],
+        "type": "object"
+      },
+      "scope": "timer_start",
+      "consent_label": "\u521b\u5efa\u5012\u8ba1\u65f6",
+      "mutating": true,
+      "dataSchema": {
+        "type": "object",
+        "properties": {
+          "timer_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256,
+            "pattern": "^[!-~]+$"
+          },
+          "label": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1
+          },
+          "duration_seconds": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 86400
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "maxLength": 64
+          },
+          "due_at": {
+            "type": "string",
+            "format": "date-time",
+            "maxLength": 64
+          },
+          "timezone": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 1
+          },
+          "state": {
+            "enum": [
+              "running",
+              "finished",
+              "cancelled"
+            ],
+            "type": "string"
+          },
+          "remaining_seconds": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 86400
+          }
+        },
+        "required": [
+          "timer_id",
+          "label",
+          "duration_seconds",
+          "created_at",
+          "due_at",
+          "timezone",
+          "state",
+          "remaining_seconds"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "description": "\u5217\u51fa\u672c\u5de5\u4f5c\u533a\u5012\u8ba1\u65f6\u548c\u5269\u4f59\u79d2\u6570\uff1bstate \u9ed8\u8ba4 all\uff0climit \u9ed8\u8ba4 10\u3002",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "limit": {
+            "maximum": 20,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "state": {
+            "enum": [
+              "all",
+              "running",
+              "finished",
+              "cancelled"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "name": "timer_list",
+      "outputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {},
+          "error": {},
+          "status": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "summary",
+          "data",
+          "error"
+        ],
+        "type": "object"
+      },
+      "scope": "timer_list",
+      "consent_label": "\u67e5\u8be2\u5012\u8ba1\u65f6",
+      "mutating": false,
+      "dataSchema": {
+        "type": "object",
+        "properties": {
+          "timers": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "timer_id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 256,
+                  "pattern": "^[!-~]+$"
+                },
+                "label": {
+                  "type": "string",
+                  "maxLength": 120,
+                  "minLength": 1
+                },
+                "duration_seconds": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 86400
+                },
+                "created_at": {
+                  "type": "string",
+                  "format": "date-time",
+                  "maxLength": 64
+                },
+                "due_at": {
+                  "type": "string",
+                  "format": "date-time",
+                  "maxLength": 64
+                },
+                "timezone": {
+                  "type": "string",
+                  "maxLength": 128,
+                  "minLength": 1
+                },
+                "state": {
+                  "enum": [
+                    "running",
+                    "finished",
+                    "cancelled"
+                  ],
+                  "type": "string"
+                },
+                "remaining_seconds": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 86400
+                }
+              },
+              "required": [
+                "timer_id",
+                "label",
+                "duration_seconds",
+                "created_at",
+                "due_at",
+                "timezone",
+                "state",
+                "remaining_seconds"
+              ],
+              "additionalProperties": false
+            },
+            "maxItems": 20
+          }
+        },
+        "required": [
+          "timers"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "description": "\u53d6\u6d88\u672a\u5230\u671f\u7684\u5012\u8ba1\u65f6\uff1b\u91cd\u590d\u53d6\u6d88\u8fd4\u56de\u540c\u4e00\u72b6\u6001\uff0c\u5df2\u5b8c\u6210\u7684\u4e0d\u80fd\u64a4\u56de\u3002",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "timer_id": {
+            "maxLength": 256,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "timer_id"
+        ],
+        "type": "object"
+      },
+      "name": "timer_cancel",
+      "outputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {},
+          "error": {},
+          "status": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "summary",
+          "data",
+          "error"
+        ],
+        "type": "object"
+      },
+      "scope": "timer_cancel",
+      "consent_label": "\u53d6\u6d88\u5012\u8ba1\u65f6",
+      "mutating": true,
+      "dataSchema": {
+        "type": "object",
+        "properties": {
+          "timer_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256,
+            "pattern": "^[!-~]+$"
+          },
+          "label": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1
+          },
+          "duration_seconds": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 86400
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "maxLength": 64
+          },
+          "due_at": {
+            "type": "string",
+            "format": "date-time",
+            "maxLength": 64
+          },
+          "timezone": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 1
+          },
+          "state": {
+            "enum": [
+              "cancelled"
+            ],
+            "type": "string"
+          },
+          "remaining_seconds": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 86400
+          }
+        },
+        "required": [
+          "timer_id",
+          "label",
+          "duration_seconds",
+          "created_at",
+          "due_at",
+          "timezone",
+          "state",
+          "remaining_seconds"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "description": "\u514dKey\u67e5\u8be2\u663e\u5f0f\u57ce\u5e02\u540d\u79f0\uff08\u53ef\u7528\u82f1\u6587\u6216\u57ce\u5e02,\u56fd\u5bb6\u6d88\u6b67\uff09\u6216\u7ecf\u5ea6,\u7eac\u5ea6\u7684\u5929\u6c14\uff1bkind=current\u5f53\u524d\u6a21\u578b\u5929\u6c14\u6216forecast\u4e09\u5929\u9884\u62a5\u3002\u8fd4\u56de\u6765\u6e90/\u6709\u6548\u65f6\u95f4\uff0c\u5931\u8d25\u4e0d\u7f16\u9020\u5929\u6c14\uff0c\u4e0d\u81ea\u52a8\u5b9a\u4f4d\u3002",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "enum": [
+              "current",
+              "forecast"
+            ],
+            "type": "string"
+          },
+          "location": {
+            "maxLength": 80,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "location"
+        ],
+        "type": "object"
+      },
+      "name": "weather_get",
+      "outputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {},
+          "error": {},
+          "status": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "summary",
+          "data",
+          "error"
+        ],
+        "type": "object"
+      },
+      "scope": "weather_get",
+      "consent_label": "\u67e5\u8be2\u5929\u6c14",
+      "mutating": false,
+      "dataSchema": {
+        "anyOf": [
+          {
+            "type": "object",
+            "properties": {
+              "provider": {
+                "type": "string",
+                "enum": [
+                  "open-meteo-photon-osrm",
+                  "fixture-public-travel"
+                ]
+              },
+              "is_mock": {
+                "type": "boolean"
+              },
+              "queried_at": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "format": "date-time"
+              },
+              "attribution": {
+                "type": "string",
+                "enum": [
+                  "Weather data by Open-Meteo \u00b7 location data by GeoNames"
+                ]
+              },
+              "source_url": {
+                "type": "string",
+                "enum": [
+                  "https://open-meteo.com/"
+                ]
+              },
+              "location_name": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 600
+              },
+              "longitude": {
+                "type": "number",
+                "minimum": -180,
+                "maximum": 180
+              },
+              "latitude": {
+                "type": "number",
+                "minimum": -90,
+                "maximum": 90
+              },
+              "timezone": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100
+              },
+              "source_kind": {
+                "type": "string",
+                "enum": [
+                  "weather_model"
+                ]
+              },
+              "fetched_at": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "format": "date-time"
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "current"
+                ]
+              },
+              "valid_at": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "format": "date-time"
+              },
+              "is_stale": {
+                "type": "boolean"
+              },
+              "current": {
+                "type": "object",
+                "properties": {
+                  "weather": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "weather_code": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 99
+                  },
+                  "temperature_c": {
+                    "type": "number",
+                    "minimum": -100,
+                    "maximum": 80
+                  },
+                  "humidity_percent": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "wind_speed_mps": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 200
+                  }
+                },
+                "required": [
+                  "weather",
+                  "weather_code",
+                  "temperature_c",
+                  "humidity_percent",
+                  "wind_speed_mps"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "provider",
+              "is_mock",
+              "queried_at",
+              "attribution",
+              "source_url",
+              "location_name",
+              "longitude",
+              "latitude",
+              "timezone",
+              "source_kind",
+              "fetched_at",
+              "kind",
+              "valid_at",
+              "is_stale",
+              "current"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "provider": {
+                "type": "string",
+                "enum": [
+                  "open-meteo-photon-osrm",
+                  "fixture-public-travel"
+                ]
+              },
+              "is_mock": {
+                "type": "boolean"
+              },
+              "queried_at": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "format": "date-time"
+              },
+              "attribution": {
+                "type": "string",
+                "enum": [
+                  "Weather data by Open-Meteo \u00b7 location data by GeoNames"
+                ]
+              },
+              "source_url": {
+                "type": "string",
+                "enum": [
+                  "https://open-meteo.com/"
+                ]
+              },
+              "location_name": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 600
+              },
+              "longitude": {
+                "type": "number",
+                "minimum": -180,
+                "maximum": 180
+              },
+              "latitude": {
+                "type": "number",
+                "minimum": -90,
+                "maximum": 90
+              },
+              "timezone": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100
+              },
+              "source_kind": {
+                "type": "string",
+                "enum": [
+                  "weather_model"
+                ]
+              },
+              "fetched_at": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "format": "date-time"
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "forecast"
+                ]
+              },
+              "forecast": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 3,
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "date": {
+                      "type": "string",
+                      "minLength": 10,
+                      "maxLength": 10,
+                      "pattern": "[0-9]{4}-[0-9]{2}-[0-9]{2}"
+                    },
+                    "weather": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 200
+                    },
+                    "high_temperature_c": {
+                      "type": "number",
+                      "minimum": -100,
+                      "maximum": 80
+                    },
+                    "low_temperature_c": {
+                      "type": "number",
+                      "minimum": -100,
+                      "maximum": 80
+                    }
+                  },
+                  "required": [
+                    "date",
+                    "weather",
+                    "high_temperature_c",
+                    "low_temperature_c"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "provider",
+              "is_mock",
+              "queried_at",
+              "attribution",
+              "source_url",
+              "location_name",
+              "longitude",
+              "latitude",
+              "timezone",
+              "source_kind",
+              "fetched_at",
+              "kind",
+              "forecast"
+            ],
+            "additionalProperties": false
+          }
+        ]
+      }
+    },
+    {
+      "description": "\u514dKey\u6309\u57ce\u5e02\u548c\u5173\u952e\u8bcd\u641c\u7d22OSM\u5730\u70b9\uff0c\u8fd4\u56de\u5019\u9009\u53ca\u5f53\u524d\u5de5\u4f5c\u533aplace_id\uff1b\u57ce\u5e02\u4f5c\u4e3a\u67e5\u8be2\u6761\u4ef6\uff0c\u4e0d\u4fdd\u8bc1\u884c\u653f\u8fb9\u754c\u8fc7\u6ee4\uff0c\u5e94\u6838\u5bf9\u8fd4\u56de\u5730\u5740\u3002\u591a\u5019\u9009\u5411\u7528\u6237\u786e\u8ba4\uff0c\u4e0d\u731c\u5f53\u524d\u4f4d\u7f6e\u3002\u5750\u6807\u4e3aWGS84\u3002",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "city": {
+            "maxLength": 80,
+            "minLength": 1,
+            "type": "string"
+          },
+          "limit": {
+            "maximum": 5,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "query": {
+            "maxLength": 80,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "query",
+          "city"
+        ],
+        "type": "object"
+      },
+      "name": "place_search",
+      "outputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {},
+          "error": {},
+          "status": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "summary",
+          "data",
+          "error"
+        ],
+        "type": "object"
+      },
+      "scope": "place_search",
+      "consent_label": "\u641c\u7d22\u5730\u70b9",
+      "mutating": false,
+      "dataSchema": {
+        "type": "object",
+        "properties": {
+          "provider": {
+            "type": "string",
+            "enum": [
+              "open-meteo-photon-osrm",
+              "fixture-public-travel"
+            ]
+          },
+          "is_mock": {
+            "type": "boolean"
+          },
+          "queried_at": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "format": "date-time"
+          },
+          "attribution": {
+            "type": "string",
+            "enum": [
+              "\u00a9 OpenStreetMap contributors \u00b7 Photon"
+            ]
+          },
+          "source_url": {
+            "type": "string",
+            "enum": [
+              "https://www.openstreetmap.org/copyright"
+            ]
+          },
+          "coordinate_system": {
+            "type": "string",
+            "enum": [
+              "WGS84"
+            ]
+          },
+          "selection_required": {
+            "type": "boolean"
+          },
+          "places": {
+            "type": "array",
+            "maxItems": 5,
+            "items": {
+              "type": "object",
+              "properties": {
+                "place_id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 256,
+                  "pattern": "^[!-~]+$"
+                },
+                "provider_id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 256
+                },
+                "name": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 600
+                },
+                "address": {
+                  "type": "string",
+                  "minLength": 0,
+                  "maxLength": 1200
+                },
+                "city": {
+                  "type": "string",
+                  "minLength": 0,
+                  "maxLength": 240
+                },
+                "country": {
+                  "type": "string",
+                  "minLength": 0,
+                  "maxLength": 240
+                },
+                "longitude": {
+                  "type": "number",
+                  "minimum": -180,
+                  "maximum": 180
+                },
+                "latitude": {
+                  "type": "number",
+                  "minimum": -90,
+                  "maximum": 90
+                }
+              },
+              "required": [
+                "place_id",
+                "provider_id",
+                "name",
+                "address",
+                "city",
+                "country",
+                "longitude",
+                "latitude"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "provider",
+          "is_mock",
+          "queried_at",
+          "attribution",
+          "source_url",
+          "coordinate_system",
+          "selection_required",
+          "places"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "description": "\u514dKey\u4f7f\u7528place_search\u8fd4\u56de\u7684\u672c\u5de5\u4f5c\u533a\u8d77\u7ec8\u70b9place_id\u89c4\u5212\u8def\u7ebf\u3002mode\u4e3adriving/walking/cycling\uff1b\u8fd4\u56de\u4f30\u8ba1\u8ddd\u79bb\u3001\u8017\u65f6\u548c\u6b65\u9aa4\uff0c\u65e0\u5b9e\u65f6\u4ea4\u901a\u3001\u4e0d\u652f\u6301\u516c\u4ea4\uff0c\u4e0d\u542f\u52a8\u5bfc\u822a\u6216\u81ea\u52a8\u5b9a\u4f4d\u3002",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "destination_place_id": {
+            "maxLength": 256,
+            "minLength": 1,
+            "type": "string"
+          },
+          "mode": {
+            "enum": [
+              "driving",
+              "walking",
+              "cycling"
+            ],
+            "type": "string"
+          },
+          "origin_place_id": {
+            "maxLength": 256,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "origin_place_id",
+          "destination_place_id",
+          "mode"
+        ],
+        "type": "object"
+      },
+      "name": "route_plan",
+      "outputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {},
+          "error": {},
+          "status": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "summary",
+          "data",
+          "error"
+        ],
+        "type": "object"
+      },
+      "scope": "route_plan",
+      "consent_label": "\u89c4\u5212\u8def\u7ebf",
+      "mutating": false,
+      "dataSchema": {
+        "type": "object",
+        "properties": {
+          "provider": {
+            "type": "string",
+            "enum": [
+              "open-meteo-photon-osrm",
+              "fixture-public-travel"
+            ]
+          },
+          "is_mock": {
+            "type": "boolean"
+          },
+          "queried_at": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "format": "date-time"
+          },
+          "attribution": {
+            "type": "string",
+            "enum": [
+              "\u00a9 OpenStreetMap contributors \u00b7 OSRM \u00b7 FOSSGIS"
+            ]
+          },
+          "source_url": {
+            "type": "string",
+            "enum": [
+              "https://routing.openstreetmap.de/about.html"
+            ]
+          },
+          "coordinate_system": {
+            "type": "string",
+            "enum": [
+              "WGS84"
+            ]
+          },
+          "route_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256,
+            "pattern": "^[!-~]+$"
+          },
+          "origin_place_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256,
+            "pattern": "^[!-~]+$"
+          },
+          "destination_place_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256,
+            "pattern": "^[!-~]+$"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "driving",
+              "walking",
+              "cycling"
+            ]
+          },
+          "origin_name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 600
+          },
+          "destination_name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 600
+          },
+          "distance_meters": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100000000
+          },
+          "duration_seconds": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 604800
+          },
+          "estimated": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "live_traffic": {
+            "type": "boolean",
+            "enum": [
+              false
+            ]
+          },
+          "fetched_at": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "format": "date-time"
+          },
+          "fix_map_url": {
+            "type": "string",
+            "enum": [
+              "https://www.openstreetmap.org/fixthemap"
+            ]
+          },
+          "steps_truncated": {
+            "type": "boolean"
+          },
+          "steps": {
+            "type": "array",
+            "maxItems": 24,
+            "items": {
+              "type": "object",
+              "properties": {
+                "road": {
+                  "type": "string",
+                  "minLength": 0,
+                  "maxLength": 600
+                },
+                "maneuver": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 80
+                },
+                "modifier": {
+                  "type": "string",
+                  "minLength": 0,
+                  "maxLength": 80
+                },
+                "distance_meters": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 100000000
+                },
+                "duration_seconds": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 604800
+                }
+              },
+              "required": [
+                "road",
+                "maneuver",
+                "modifier",
+                "distance_meters",
+                "duration_seconds"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "provider",
+          "is_mock",
+          "queried_at",
+          "attribution",
+          "source_url",
+          "coordinate_system",
+          "route_id",
+          "origin_place_id",
+          "destination_place_id",
+          "mode",
+          "origin_name",
+          "destination_name",
+          "distance_meters",
+          "duration_seconds",
+          "estimated",
+          "live_traffic",
+          "fetched_at",
+          "fix_map_url",
+          "steps_truncated",
+          "steps"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "description": "\u5728\u7528\u6237\u5df2\u6388\u6743\u5e76\u9009\u5b9a\u7684\u82f9\u679c\u63d0\u9192\u4e8b\u9879\u6e05\u5355\u521b\u5efa\u63d0\u9192/\u5f85\u529e\u3002due_at\u53ef\u7701\u7565\uff1b\u6709\u65f6\u523b\u65f6\u5fc5\u987bISO8601\u542b\u65f6\u533a\u3002\u4e0d\u4f1a\u5199\u5165\u65e7\u672c\u5730\u5012\u8ba1\u65f6\u3002",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "due_at": {
+            "maxLength": 64,
+            "minLength": 1,
+            "type": "string"
+          },
+          "notes": {
+            "maxLength": 2000,
+            "minLength": 0,
+            "type": "string"
+          },
+          "title": {
+            "maxLength": 120,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "title"
+        ],
+        "type": "object"
+      },
+      "name": "apple_reminder_create",
+      "outputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {},
+          "error": {},
+          "status": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "summary",
+          "data",
+          "error"
+        ],
+        "type": "object"
+      },
+      "scope": "apple_reminder_create",
+      "consent_label": "\u521b\u5efa\u82f9\u679c\u63d0\u9192\uff0f\u5f85\u529e",
+      "mutating": true,
+      "changes_local_context": false,
+      "dataSchema": {
+        "type": "object",
+        "properties": {
+          "is_mock": {
+            "type": "boolean"
+          },
+          "result_truncated": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "provider": {
+            "type": "string",
+            "enum": [
+              "apple-eventkit",
+              "mock-apple-desktop"
+            ]
+          },
+          "reminder_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256,
+            "pattern": "[!-~]+"
+          },
+          "revision": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "[!-~]+"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 120
+          },
+          "notes": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 2000
+          },
+          "due_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "completed"
+            ]
+          },
+          "calendar_name": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 120
+          },
+          "modified_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "notes_truncated": {
+            "type": "boolean"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "reminder_id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 256,
+                  "pattern": "[!-~]+"
+                },
+                "revision": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "[!-~]+"
+                },
+                "title": {
+                  "type": "string",
+                  "minLength": 0,
+                  "maxLength": 120
+                },
+                "notes": {
+                  "type": "string",
+                  "minLength": 0,
+                  "maxLength": 2000
+                },
+                "due_at": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 64,
+                      "format": "date-time"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "state": {
+                  "type": "string",
+                  "enum": [
+                    "pending",
+                    "completed"
+                  ]
+                },
+                "calendar_name": {
+                  "type": "string",
+                  "minLength": 0,
+                  "maxLength": 120
+                },
+                "modified_at": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 64,
+                      "format": "date-time"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "notes_truncated": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "reminder_id",
+                "revision",
+                "title",
+                "state"
+              ],
+              "additionalProperties": false
+            },
+            "minItems": 1,
+            "maxItems": 1
+          }
+        },
+        "required": [
+          "is_mock",
+          "provider",
+          "reminder_id",
+          "revision",
+          "title",
+          "state",
+          "items"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "description": "\u5217\u51fa\u5f53\u524d\u5de5\u4f5c\u533a\u9009\u5b9a\u82f9\u679c\u6e05\u5355\u7684\u63d0\u9192/\u5f85\u529e\uff0c\u8fd4\u56de\u672c\u5de5\u4f5c\u533a\u5bf9\u8c61ID\u53carevision\uff1b\u4e0d\u63a5\u53d7\u82f9\u679c\u5185\u90e8ID\u3002",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "limit": {
+            "maximum": 20,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "state": {
+            "enum": [
+              "pending",
+              "completed",
+              "all"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "name": "apple_reminder_list",
+      "outputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {},
+          "error": {},
+          "status": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "summary",
+          "data",
+          "error"
+        ],
+        "type": "object"
+      },
+      "scope": "apple_reminder_list",
+      "consent_label": "\u67e5\u8be2\u82f9\u679c\u63d0\u9192\uff0f\u5f85\u529e",
+      "mutating": false,
+      "changes_local_context": false,
+      "dataSchema": {
+        "type": "object",
+        "properties": {
+          "is_mock": {
+            "type": "boolean"
+          },
+          "result_truncated": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "provider": {
+            "type": "string",
+            "enum": [
+              "apple-eventkit",
+              "mock-apple-desktop"
+            ]
+          },
+          "calendar_name": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 120
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "reminder_id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 256,
+                  "pattern": "[!-~]+"
+                },
+                "revision": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "[!-~]+"
+                },
+                "title": {
+                  "type": "string",
+                  "minLength": 0,
+                  "maxLength": 120
+                },
+                "notes": {
+                  "type": "string",
+                  "minLength": 0,
+                  "maxLength": 2000
+                },
+                "due_at": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 64,
+                      "format": "date-time"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "state": {
+                  "type": "string",
+                  "enum": [
+                    "pending",
+                    "completed"
+                  ]
+                },
+                "calendar_name": {
+                  "type": "string",
+                  "minLength": 0,
+                  "maxLength": 120
+                },
+                "modified_at": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 64,
+                      "format": "date-time"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "notes_truncated": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "reminder_id",
+                "revision",
+                "title",
+                "state"
+              ],
+              "additionalProperties": false
+            },
+            "minItems": 0,
+            "maxItems": 20
+          }
+        },
+        "required": [
+          "is_mock",
+          "provider",
+          "items"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "description": "\u4fee\u6539\u5df2\u8bfb\u53d6\u7684\u82f9\u679c\u63d0\u9192/\u5f85\u529e\uff1bexpected_revision\u9632\u6b62\u8986\u76d6\u5176\u4ed6\u7aef\u4fee\u6539\u3002state\u53ef\u4e3apending/completed\uff1bclear_due=true\u79fb\u9664\u5230\u671f\u65f6\u95f4\u3002",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "clear_due": {
+            "type": "boolean"
+          },
+          "due_at": {
+            "maxLength": 64,
+            "minLength": 1,
+            "type": "string"
+          },
+          "expected_revision": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          },
+          "notes": {
+            "maxLength": 2000,
+            "minLength": 0,
+            "type": "string"
+          },
+          "reminder_id": {
+            "maxLength": 256,
+            "minLength": 1,
+            "type": "string"
+          },
+          "state": {
+            "enum": [
+              "pending",
+              "completed"
+            ],
+            "type": "string"
+          },
+          "title": {
+            "maxLength": 120,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "reminder_id",
+          "expected_revision"
+        ],
+        "type": "object"
+      },
+      "name": "apple_reminder_update",
+      "outputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {},
+          "error": {},
+          "status": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "summary",
+          "data",
+          "error"
+        ],
+        "type": "object"
+      },
+      "scope": "apple_reminder_update",
+      "consent_label": "\u4fee\u6539\uff0f\u5b8c\u6210\u82f9\u679c\u63d0\u9192",
+      "mutating": true,
+      "changes_local_context": false,
+      "dataSchema": {
+        "type": "object",
+        "properties": {
+          "is_mock": {
+            "type": "boolean"
+          },
+          "result_truncated": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "provider": {
+            "type": "string",
+            "enum": [
+              "apple-eventkit",
+              "mock-apple-desktop"
+            ]
+          },
+          "reminder_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256,
+            "pattern": "[!-~]+"
+          },
+          "revision": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "[!-~]+"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 120
+          },
+          "notes": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 2000
+          },
+          "due_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "completed"
+            ]
+          },
+          "calendar_name": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 120
+          },
+          "modified_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "notes_truncated": {
+            "type": "boolean"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "reminder_id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 256,
+                  "pattern": "[!-~]+"
+                },
+                "revision": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "[!-~]+"
+                },
+                "title": {
+                  "type": "string",
+                  "minLength": 0,
+                  "maxLength": 120
+                },
+                "notes": {
+                  "type": "string",
+                  "minLength": 0,
+                  "maxLength": 2000
+                },
+                "due_at": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 64,
+                      "format": "date-time"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "state": {
+                  "type": "string",
+                  "enum": [
+                    "pending",
+                    "completed"
+                  ]
+                },
+                "calendar_name": {
+                  "type": "string",
+                  "minLength": 0,
+                  "maxLength": 120
+                },
+                "modified_at": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 64,
+                      "format": "date-time"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "notes_truncated": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "reminder_id",
+                "revision",
+                "title",
+                "state"
+              ],
+              "additionalProperties": false
+            },
+            "minItems": 1,
+            "maxItems": 1
+          }
+        },
+        "required": [
+          "is_mock",
+          "provider",
+          "reminder_id",
+          "revision",
+          "title",
+          "state",
+          "items"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "description": "\u5220\u9664\u9009\u5b9a\u82f9\u679c\u6e05\u5355\u4e2d\u5df2\u8bfb\u53d6\u7684\u63d0\u9192/\u5f85\u529e\uff1b\u9700\u539frevision\uff0c\u4e0d\u4f1a\u5220\u9664\u5176\u4ed6\u5de5\u4f5c\u533a\u5bf9\u8c61\u3002",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_revision": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          },
+          "reminder_id": {
+            "maxLength": 256,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "reminder_id",
+          "expected_revision"
+        ],
+        "type": "object"
+      },
+      "name": "apple_reminder_delete",
+      "outputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {},
+          "error": {},
+          "status": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "summary",
+          "data",
+          "error"
+        ],
+        "type": "object"
+      },
+      "scope": "apple_reminder_delete",
+      "consent_label": "\u5220\u9664\u82f9\u679c\u63d0\u9192",
+      "mutating": true,
+      "changes_local_context": false,
+      "dataSchema": {
+        "type": "object",
+        "properties": {
+          "is_mock": {
+            "type": "boolean"
+          },
+          "result_truncated": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "provider": {
+            "type": "string",
+            "enum": [
+              "apple-eventkit",
+              "mock-apple-desktop"
+            ]
+          },
+          "deleted": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "reminder_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256,
+            "pattern": "[!-~]+"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "reminder_id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 256,
+                  "pattern": "[!-~]+"
+                },
+                "revision": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "[!-~]+"
+                },
+                "title": {
+                  "type": "string",
+                  "minLength": 0,
+                  "maxLength": 120
+                },
+                "notes": {
+                  "type": "string",
+                  "minLength": 0,
+                  "maxLength": 2000
+                },
+                "due_at": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 64,
+                      "format": "date-time"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "state": {
+                  "type": "string",
+                  "enum": [
+                    "pending",
+                    "completed"
+                  ]
+                },
+                "calendar_name": {
+                  "type": "string",
+                  "minLength": 0,
+                  "maxLength": 120
+                },
+                "modified_at": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 64,
+                      "format": "date-time"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "notes_truncated": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "reminder_id",
+                "revision",
+                "title",
+                "state"
+              ],
+              "additionalProperties": false
+            },
+            "minItems": 0,
+            "maxItems": 0
+          }
+        },
+        "required": [
+          "is_mock",
+          "provider",
+          "deleted",
+          "reminder_id",
+          "items"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "description": "\u8c03\u8d77FaceTime\u5bf9\u6307\u5b9a\u7535\u8bdd/\u90ae\u7bb1\u7684\u7cfb\u7edf\u547c\u53eb\u786e\u8ba4\uff1b\u8fd4\u56de\u5df2\u8c03\u8d77\u800c\u975e\u5df2\u63a5\u901a\uff0c\u4e0d\u8bfb\u901a\u8baf\u5f55\u3002mode=audio\u9700\u672c\u673a\u652f\u6301\u3002\u901a\u8bdd\u671f\u95f4\u5e94\u7531Chrome/H20\u6682\u505c\u52a9\u624b\u6536\u97f3\u3002",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "mode": {
+            "enum": [
+              "video",
+              "audio"
+            ],
+            "type": "string"
+          },
+          "target": {
+            "maxLength": 254,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "target"
+        ],
+        "type": "object"
+      },
+      "name": "facetime_call",
+      "outputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {},
+          "error": {},
+          "status": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "summary",
+          "data",
+          "error"
+        ],
+        "type": "object"
+      },
+      "scope": "facetime_call",
+      "consent_label": "\u6253\u5f00 FaceTime \u7cfb\u7edf\u547c\u53eb\u786e\u8ba4\uff08\u6682\u505c\u52a9\u624b\u6536\u97f3\uff09",
+      "mutating": true,
+      "changes_local_context": false,
+      "dataSchema": {
+        "type": "object",
+        "properties": {
+          "is_mock": {
+            "type": "boolean"
+          },
+          "result_truncated": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "call_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256,
+            "pattern": "[!-~]+"
+          },
+          "target": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 254
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "video",
+              "audio"
+            ]
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "system_confirmation_opened"
+            ]
+          },
+          "connected": {
+            "type": "boolean",
+            "enum": [
+              false
+            ]
+          },
+          "revision": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "[!-~]+"
+          },
+          "provider": {
+            "type": "string",
+            "enum": [
+              "apple-facetime",
+              "mock-apple-desktop"
+            ]
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "call_id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 256,
+                  "pattern": "[!-~]+"
+                },
+                "target": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 254
+                },
+                "mode": {
+                  "type": "string",
+                  "enum": [
+                    "video",
+                    "audio"
+                  ]
+                },
+                "state": {
+                  "type": "string",
+                  "enum": [
+                    "system_confirmation_opened"
+                  ]
+                },
+                "connected": {
+                  "type": "boolean",
+                  "enum": [
+                    false
+                  ]
+                },
+                "revision": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "[!-~]+"
+                }
+              },
+              "required": [
+                "call_id",
+                "target",
+                "mode",
+                "state",
+                "connected"
+              ],
+              "additionalProperties": false
+            },
+            "minItems": 1,
+            "maxItems": 1
+          },
+          "assistant_should_pause_capture": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "call_connection_observed": {
+            "type": "boolean",
+            "enum": [
+              false
+            ]
+          }
+        },
+        "required": [
+          "is_mock",
+          "call_id",
+          "target",
+          "mode",
+          "state",
+          "connected",
+          "provider",
+          "items"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "dataSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "is_mock": {
+            "type": "boolean"
+          },
+          "items": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "contact_id": {
+                  "maxLength": 256,
+                  "minLength": 1,
+                  "pattern": "^[!-~]+$",
+                  "type": "string"
+                },
+                "display_name": {
+                  "maxLength": 120,
+                  "type": "string"
+                },
+                "endpoints": {
+                  "items": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "endpoint_id": {
+                        "maxLength": 256,
+                        "minLength": 1,
+                        "pattern": "^[!-~]+$",
+                        "type": "string"
+                      },
+                      "kind": {
+                        "enum": [
+                          "phone",
+                          "email"
+                        ]
+                      },
+                      "label": {
+                        "maxLength": 40,
+                        "type": "string"
+                      },
+                      "value_masked": {
+                        "maxLength": 260,
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "endpoint_id",
+                      "kind",
+                      "label",
+                      "value_masked"
+                    ],
+                    "type": "object"
+                  },
+                  "maxItems": 10,
+                  "type": "array"
+                },
+                "endpoints_limited": {
+                  "type": "boolean"
+                },
+                "revision": {
+                  "maxLength": 128,
+                  "type": "string"
+                }
+              },
+              "required": [
+                "contact_id",
+                "display_name",
+                "revision",
+                "endpoints",
+                "endpoints_limited"
+              ],
+              "type": "object"
+            },
+            "maxItems": 10,
+            "type": "array"
+          },
+          "provider": {
+            "enum": [
+              "apple-contacts",
+              "mock-apple-contacts"
+            ]
+          },
+          "query_kind": {
+            "const": "name"
+          },
+          "result_truncated": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "items",
+          "is_mock",
+          "provider",
+          "query_kind",
+          "result_truncated"
+        ],
+        "type": "object"
+      },
+      "description": "\u5728Mac\u5df2\u6388\u6743\u901a\u8baf\u5f55\u4e2d\u6309\u59d3\u540d\u67e5\u8be2\uff08\u4e0d\u81ea\u52a8\u7533\u8bf7\u7cfb\u7edf\u6743\u9650\uff09\u3002\u8fd4\u56de\u5019\u9009contact_id/revision\u53ca\u8131\u654f\u7684\u53f7\u7801/\u90ae\u7bb1endpoint_id\uff1b\u91cd\u540d\u6216\u591a\u8054\u7cfb\u65b9\u5f0f\u9700\u7528\u6237\u9009\u62e9\uff0c\u4e0d\u81ea\u52a8\u62e8\u53f7\u3002",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "limit": {
+            "maximum": 10,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "query": {
+            "maxLength": 120,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "type": "object"
+      },
+      "name": "contacts_search",
+      "outputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {},
+          "error": {},
+          "status": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "summary",
+          "data",
+          "error"
+        ],
+        "type": "object"
+      },
+      "scope": "contacts_search",
+      "consent_label": "\u67e5\u8be2Mac\u8054\u7cfb\u4eba\uff08\u8131\u654f\uff09",
+      "mutating": false
+    },
+    {
+      "dataSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "assistant_should_pause_capture": {
+            "const": true
+          },
+          "call_connection_observed": {
+            "const": false
+          },
+          "call_id": {
+            "maxLength": 256,
+            "minLength": 1,
+            "pattern": "^[!-~]+$",
+            "type": "string"
+          },
+          "connected": {
+            "const": false
+          },
+          "contact_id": {
+            "maxLength": 256,
+            "minLength": 1,
+            "pattern": "^[!-~]+$",
+            "type": "string"
+          },
+          "display_name": {
+            "maxLength": 120,
+            "type": "string"
+          },
+          "endpoint_id": {
+            "maxLength": 256,
+            "minLength": 1,
+            "pattern": "^[!-~]+$",
+            "type": "string"
+          },
+          "is_mock": {
+            "type": "boolean"
+          },
+          "items": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "call_id": {
+                  "maxLength": 256,
+                  "minLength": 1,
+                  "pattern": "^[!-~]+$",
+                  "type": "string"
+                },
+                "connected": {
+                  "const": false
+                },
+                "contact_id": {
+                  "maxLength": 256,
+                  "minLength": 1,
+                  "pattern": "^[!-~]+$",
+                  "type": "string"
+                },
+                "display_name": {
+                  "maxLength": 120,
+                  "type": "string"
+                },
+                "endpoint_id": {
+                  "maxLength": 256,
+                  "minLength": 1,
+                  "pattern": "^[!-~]+$",
+                  "type": "string"
+                },
+                "mode": {
+                  "enum": [
+                    "video",
+                    "audio"
+                  ]
+                },
+                "state": {
+                  "const": "system_confirmation_opened"
+                },
+                "target_masked": {
+                  "maxLength": 260,
+                  "type": "string"
+                }
+              },
+              "required": [
+                "call_id",
+                "connected",
+                "contact_id",
+                "display_name",
+                "endpoint_id",
+                "mode",
+                "state",
+                "target_masked"
+              ],
+              "type": "object"
+            },
+            "maxItems": 1,
+            "minItems": 1,
+            "type": "array"
+          },
+          "mode": {
+            "enum": [
+              "video",
+              "audio"
+            ]
+          },
+          "provider": {
+            "enum": [
+              "apple-facetime",
+              "mock-apple-facetime"
+            ]
+          },
+          "state": {
+            "const": "system_confirmation_opened"
+          },
+          "target_masked": {
+            "maxLength": 260,
+            "type": "string"
+          }
+        },
+        "required": [
+          "assistant_should_pause_capture",
+          "call_connection_observed",
+          "call_id",
+          "connected",
+          "contact_id",
+          "display_name",
+          "endpoint_id",
+          "is_mock",
+          "items",
+          "mode",
+          "provider",
+          "state",
+          "target_masked"
+        ],
+        "type": "object"
+      },
+      "description": "\u5bf9contacts_search\u8fd4\u56de\u7684\u660e\u786e\u8054\u7cfb\u4eba\u4e0eendpoint\u53d1\u8d77FaceTime\u7cfb\u7edf\u786e\u8ba4\uff1b\u9700\u8981\u539frevision\u5e76\u91cd\u65b0\u6838\u5bf9\u901a\u8baf\u5f55\u3002\u91cd\u540d/\u591a\u53f7\u7801\u5148\u6f84\u6e05\uff0c\u4e0d\u63a5\u53d7\u59d3\u540d\u6216\u539f\u751fID\u76f4\u63a5\u62e8\u53f7\u3002\u53ea\u4ee3\u8868\u5df2\u8c03\u8d77\uff0c\u4e0d\u4ee3\u8868\u63a5\u901a\uff1bH20\u9700\u5148\u53d6\u5f97\u6d4f\u89c8\u5668\u6536\u97f3\u6682\u505cACK\u3002",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "contact_id": {
+            "maxLength": 256,
+            "minLength": 1,
+            "type": "string"
+          },
+          "endpoint_id": {
+            "maxLength": 256,
+            "minLength": 1,
+            "type": "string"
+          },
+          "expected_revision": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          },
+          "mode": {
+            "enum": [
+              "video",
+              "audio"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "contact_id",
+          "endpoint_id",
+          "expected_revision"
+        ],
+        "type": "object"
+      },
+      "name": "facetime_call_contact",
+      "outputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {},
+          "error": {},
+          "status": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "summary",
+          "data",
+          "error"
+        ],
+        "type": "object"
+      },
+      "scope": "facetime_call_contact",
+      "consent_label": "\u547c\u53eb\u9009\u5b9a\u8054\u7cfb\u4eba\uff08\u7cfb\u7edf\u786e\u8ba4\uff09",
+      "mutating": true
+    }
+  ],
+  "event_scopes": [
+    {
+      "scope": "timer.events.receive",
+      "consent_label": "\u63a5\u6536\u5e76\u4fdd\u5b58\u5012\u8ba1\u65f6\u5230\u671f\u4e8b\u4ef6"
+    },
+    {
+      "scope": "timer.events.speak",
+      "consent_label": "\u5728\u539f\u8bed\u97f3\u4f1a\u8bdd\u7a7a\u95f2\u65f6\u64ad\u62a5\u5012\u8ba1\u65f6\u5230\u671f"
+    }
+  ],
+  "extends": "apple_desktop_tools_demo_v1"
+}
